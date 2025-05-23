@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ task.task_name }} - Fullscreen Timer</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="fullscreen-timer-body">
+    <div class="fullscreen-timer-container">
+        <div class="timer-header">
+            <h1 class="task-title">{{ task.task_name }}</h1>
+            <button class="btn btn-outline-light exit-fullscreen" onclick="exitFullscreen()">
+                <i class="fas fa-times"></i> Exit Fullscreen
+            </button>
+        </div>
+        
+        <div class="timer-main">
+            <div class="timer-circle">
+                <div class="timer-display-large" id="fullscreen-timer-display">
+                    {{ task.duration }}:00
+                </div>
+                <div class="timer-progress-ring">
+                    <svg class="progress-ring" width="300" height="300">
+                        <circle class="progress-ring-circle" 
+                                cx="150" cy="150" r="140" 
+                                stroke="rgba(255,255,255,0.3)" 
+                                stroke-width="8" 
+                                fill="transparent"/>
+                        <circle class="progress-ring-progress" 
+                                cx="150" cy="150" r="140" 
+                                stroke="#4CAF50" 
+                                stroke-width="8" 
+                                fill="transparent"
+                                stroke-dasharray="879.6"
+                                stroke-dashoffset="879.6"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="fullscreen-controls">
+                <button class="btn btn-success btn-lg start-fullscreen-timer" data-task-id="{{ task.id }}" data-duration="{{ task.duration }}">
+                    <i class="fas fa-play"></i> Start Timer
+                </button>
+                <button class="btn btn-warning btn-lg pause-fullscreen-timer" data-task-id="{{ task.id }}" style="display: none;">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+                <button class="btn btn-info btn-lg resume-fullscreen-timer" data-task-id="{{ task.id }}" style="display: none;">
+                    <i class="fas fa-play"></i> Resume
+                </button>
+                <button class="btn btn-primary btn-lg complete-fullscreen-timer" data-task-id="{{ task.id }}" style="display: none;">
+                    <i class="fas fa-check"></i> Complete Task
+                </button>
+            </div>
+        </div>
+        
+        <div class="timer-footer">
+            <div class="timer-stats">
+                <div class="stat">
+                    <span class="stat-label">Duration:</span>
+                    <span class="stat-value">{{ task.duration }} minutes</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Focus Mode:</span>
+                    <span class="stat-value">Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden form for task completion -->
+    <form id="fullscreen-complete-form" method="POST" action="{{ url_for('complete_task', task_id=task.id) }}" style="display: none;">
+        <input type="hidden" id="fullscreen-time-taken" name="time_taken">
+    </form>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+    
+    <script>
+    function exitFullscreen() {
+        if (confirm('Are you sure you want to exit fullscreen mode?')) {
+            window.close();
+            // If window.close() doesn't work (some browsers block it), redirect to dashboard
+            setTimeout(() => {
+                window.location.href = "{{ url_for('index') }}";
+            }, 100);
+        }
+    }
+    
+    // Initialize fullscreen timer when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeFullscreenTimer();
+    });
+    </script>
+</body>
+</html>

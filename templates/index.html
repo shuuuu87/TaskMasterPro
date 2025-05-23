@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Task Manager Reborn{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+                <div class="score-display">
+                    <span class="score-label">Your Score:</span>
+                    <span class="score-value">{{ user_score }}</span>
+                    <span class="score-unit">points</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Task Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="task-form-card">
+                <h3><i class="fas fa-plus-circle"></i> Add New Task</h3>
+                <form method="POST" action="{{ url_for('add_task') }}" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="task_name" class="form-label">Task Name</label>
+                        <input type="text" class="form-control" id="task_name" name="task_name" placeholder="Enter task description" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="duration" class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" id="duration" name="duration" min="1" max="480" placeholder="30" required>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tasks List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="tasks-container">
+                <h3><i class="fas fa-list"></i> Today's Tasks</h3>
+                
+                {% if tasks %}
+                    <div class="tasks-grid">
+                        {% for task in tasks %}
+                        <div class="task-card" data-task-id="{{ task.id }}">
+                            <div class="task-header">
+                                <h4>{{ task.task_name }}</h4>
+                                <div class="task-duration">
+                                    <i class="fas fa-clock"></i> {{ task.duration }} min
+                                </div>
+                            </div>
+                            
+                            <div class="task-timer" id="timer-{{ task.id }}">
+                                <div class="timer-display">00:00</div>
+                                <div class="timer-progress">
+                                    <div class="progress-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            {% if task.is_complete %}
+                                <div class="task-complete">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Completed in {{ task.time_taken }} minutes</span>
+                                </div>
+                            {% else %}
+                                <div class="task-controls">
+                                    <button class="btn btn-success btn-sm start-timer" data-task-id="{{ task.id }}" data-duration="{{ task.duration }}">
+                                        <i class="fas fa-play"></i> Start
+                                    </button>
+                                    <button class="btn btn-warning btn-sm pause-timer" data-task-id="{{ task.id }}" style="display: none;">
+                                        <i class="fas fa-pause"></i> Pause
+                                    </button>
+                                    <button class="btn btn-info btn-sm resume-timer" data-task-id="{{ task.id }}" style="display: none;">
+                                        <i class="fas fa-play"></i> Resume
+                                    </button>
+                                    <button class="btn btn-primary btn-sm fullscreen-timer" data-task-id="{{ task.id }}">
+                                        <i class="fas fa-expand"></i> Fullscreen
+                                    </button>
+                                    <button class="btn btn-primary btn-sm complete-timer" data-task-id="{{ task.id }}" style="display: none;">
+                                        <i class="fas fa-check"></i> Complete
+                                    </button>
+                                    <form method="POST" action="{{ url_for('delete_task', task_id=task.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this task?')">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list fa-4x text-muted"></i>
+                        <h4>No tasks for today</h4>
+                        <p class="text-muted">Add your first task to get started!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for task completion -->
+<form id="complete-task-form" method="POST" style="display: none;">
+    <input type="hidden" id="time-taken-input" name="time_taken">
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize timer functionality when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTimers();
+});
+</script>
+{% endblock %}

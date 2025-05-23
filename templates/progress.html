@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Progress - Task Manager Reborn{% endblock %}
+
+{% block content %}
+<div class="progress-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="progress-header">
+                <h1><i class="fas fa-chart-line"></i> Your Progress</h1>
+                <p class="text-muted">Track your productivity over the last 7 days</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="total-time">{{ work_times|sum }}</h3>
+                    <p>Total Minutes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="avg-daily">{{ (work_times|sum / 7)|round(1) }}</h3>
+                    <p>Daily Average</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ current_user.score }}</h3>
+                    <p>Total Points</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="best-day">{{ work_times|max }}</h3>
+                    <p>Best Day (min)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Progress chart data from server
+const chartData = {
+    labels: {{ dates|tojson }},
+    datasets: [{
+        label: 'Minutes Worked',
+        data: {{ work_times|tojson }},
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.4,
+        fill: true
+    }]
+};
+
+// Chart configuration
+const config = {
+    type: 'line',
+    data: chartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Daily Work Time (Last 7 Days)'
+            },
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Minutes'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+            }
+        },
+        animation: {
+            duration: 2000,
+            easing: 'easeInOutQuart'
+        }
+    }
+};
+
+// Create the chart
+const ctx = document.getElementById('progressChart').getContext('2d');
+const progressChart = new Chart(ctx, config);
+</script>
+{% endblock %}

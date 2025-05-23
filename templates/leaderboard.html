@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Task Manager Reborn{% endblock %}
+
+{% block content %}
+<div class="leaderboard-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="leaderboard-header">
+                <h1><i class="fas fa-trophy"></i> Leaderboard</h1>
+                <p class="text-muted">See how you rank against other productive users</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="leaderboard-table">
+                {% if top_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>User</th>
+                                    <th>Score</th>
+                                    <th>Badge</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in top_users %}
+                                <tr class="{% if user.id == current_user.id %}current-user{% endif %}">
+                                    <td class="rank-cell">
+                                        {% if loop.index == 1 %}
+                                            <i class="fas fa-crown text-warning"></i>
+                                        {% elif loop.index == 2 %}
+                                            <i class="fas fa-medal text-secondary"></i>
+                                        {% elif loop.index == 3 %}
+                                            <i class="fas fa-medal text-warning"></i>
+                                        {% else %}
+                                            <span class="rank-number">{{ loop.index }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="user-cell">
+                                        <div class="user-info">
+                                            <i class="fas fa-user-circle"></i>
+                                            <span class="username">{{ user.username }}</span>
+                                            {% if user.id == current_user.id %}
+                                                <span class="badge bg-primary ms-2">You</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="score-cell">
+                                        <span class="score-value">{{ user.score }}</span>
+                                        <span class="score-unit">pts</span>
+                                    </td>
+                                    <td class="badge-cell">
+                                        {% if user.score >= 100 %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-star"></i> Expert
+                                            </span>
+                                        {% elif user.score >= 50 %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-thumbs-up"></i> Advanced
+                                            </span>
+                                        {% elif user.score >= 20 %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-seedling"></i> Growing
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-baby"></i> Beginner
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-users fa-4x text-muted"></i>
+                        <h4>No users yet</h4>
+                        <p class="text-muted">Be the first to complete tasks and earn points!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievement levels info -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="achievement-info">
+                <h3><i class="fas fa-medal"></i> Achievement Levels</h3>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="achievement-card">
+                            <i class="fas fa-baby fa-2x text-secondary"></i>
+                            <h5>Beginner</h5>
+                            <p>0-19 points</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="achievement-card">
+                            <i class="fas fa-seedling fa-2x text-warning"></i>
+                            <h5>Growing</h5>
+                            <p>20-49 points</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="achievement-card">
+                            <i class="fas fa-thumbs-up fa-2x text-info"></i>
+                            <h5>Advanced</h5>
+                            <p>50-99 points</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="achievement-card">
+                            <i class="fas fa-star fa-2x text-success"></i>
+                            <h5>Expert</h5>
+                            <p>100+ points</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

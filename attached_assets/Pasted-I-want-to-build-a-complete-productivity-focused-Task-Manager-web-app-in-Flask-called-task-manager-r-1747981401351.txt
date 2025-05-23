@@ -1,0 +1,321 @@
+I want to build a complete productivity-focused Task Manager web app in Flask, called task_manager_reborn. This app tracks how much real time users spend on tasks and rewards them with points. Use Flask + SQLAlchemy + Flask-Login + Chart.js for backend and frontend, with modern UI/UX and JavaScript logic.
+
+
+---
+
+Core Concept:
+
+Users register, log in, add tasks, run timers per task, complete them, and earn points based on time spent. A progress graph and global leaderboard show user achievements.
+
+
+---
+
+New Additions:
+
+1. Fullscreen Timer Mode:
+
+Add a "Fullscreen Timer" button next to each task.
+
+When clicked, it opens a fullscreen view showing:
+
+Task name
+
+Timer countdown (large font)
+
+Pause/Resume/Exit Fullscreen buttons
+
+
+You can also enter fullscreen automatically when the task timer starts.
+
+
+2. Pause & Resume Timer Functionality:
+
+Add a Pause button next to each timer.
+
+When paused:
+
+Timer stops
+
+Time is preserved
+
+
+When resumed:
+
+Timer continues from where it was paused
+
+
+
+3. Example Scenario (for understanding):
+
+User starts a task with a 30-minute timer.
+
+After 10 minutes, he pauses.
+
+Timer shows 20:00 left.
+
+He resumes later, timer continues from 20:00, not from start.
+
+He can open fullscreen mode any time to focus on the countdown.
+
+
+Use JavaScript and localStorage to store:
+
+{
+  "task_123": {
+    "startTime": 1716450000000, // when timer started
+    "elapsedTime": 600000,      // ms worked before pause
+    "isPaused": true,
+    "remaining": 1200000        // ms left
+  }
+}
+
+
+---
+
+All Other Details (Rest of Prompt):
+
+
+
+---
+
+1. Overall Concept:
+
+Users register and log in. They can add tasks, start a custom-duration timer per task, complete tasks, and earn points based on how much real time they worked. The app tracks user progress with a 7-day graph and shows a global leaderboard.
+
+
+---
+
+2. Folder Structure:
+
+task_manager_reborn/
+│
+├── app/
+│   ├── init.py             # App factory with SQLAlchemy & login manager
+│   ├── models.py               # User and Task models
+│   ├── routes/
+│   │   ├── init.py
+│   │   ├── auth.py             # Login, Register, Logout
+│   │   ├── home.py             # Task handling, timer
+│   │   ├── progress.py         # Progress graph route
+│   │   └── leaderboard.py      # Scoreboard
+│   ├── templates/
+│   │   ├── base.html           # Shared layout
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── index.html          # Home page
+│   │   ├── progress.html
+│   │   └── leaderboard.html
+│   ├── static/
+│       ├── css/style.css
+│       └── js/main.js          # Timer + localStorage
+│
+├── config.py                   # Config class (secret key, DB URI)
+├── run.py                      # App runner
+├── requirements.txt            # Flask, SQLAlchemy, Chart.js, etc.
+
+
+---
+
+3. Features Per Page:
+
+A. Login/Register:
+
+Flask-WTF forms for input
+
+Passwords hashed with Werkzeug
+
+Sessions managed with Flask-Login
+
+Redirect to / if logged in
+
+
+
+---
+
+B. Home Page (/):
+
+Each user can:
+
+Add tasks with custom durations (in minutes)
+
+Each task has:
+
+Task name
+
+Dropdown/input for setting duration
+
+Start Task button
+
+Complete Task button
+
+Delete Task button
+
+
+Timer counts down from chosen time
+
+When complete:
+
+Store actual time taken
+
+Disable the Complete button
+
+Display "Time Taken" next to the task
+
+
+Score = 5 points per hour worked
+
+e.g., 2 tasks of 30 mins = 5 points
+
+Add time across all tasks
+
+
+Score displayed at top
+
+Task list resets after 12 AM
+
+JavaScript should use localStorage to preserve timer across refreshes
+
+
+
+---
+
+C. Progress Page (/progress):
+
+Show line graph (Chart.js)
+
+X-axis: Last 7 days
+
+Y-axis: Total time worked per day (in minutes)
+
+Each user sees only their own data
+
+Graph updates instantly after a task is marked complete
+
+
+
+---
+
+D. Leaderboard (/leaderboard):
+
+Show top users by total score
+
+Data refreshed every day after 12 AM
+
+Show: Rank, Username, Score
+
+Only real users (who registered) are included
+
+
+
+---
+
+4. Backend Details:
+
+User Model
+
+id, username, email, password_hash, score, etc.
+
+
+Task Model
+
+id, user_id, task_name, duration, time_taken, date_created, is_complete
+
+
+Score Calculation
+
+Track total time of completed tasks
+
+Every 60 mins = +5 points
+
+Update user score immediately when a task is completed
+
+
+
+---
+
+5. Frontend Styling & Animation
+
+Use base.html for shared header/nav layout
+
+Include simple background gradient or image
+
+Font Awesome for icons
+
+Responsive design for mobile
+
+Animation on buttons, task completion, chart drawing
+
+
+
+---
+
+6. Important Behavior
+
+Only 1 task timer runs at a time
+
+When “Start Task” clicked, countdown begins using JavaScript
+
+When “Complete Task” clicked:
+
+Timer stops
+
+Duration is calculated and saved in DB
+
+Points awarded based on total real time
+
+
+Timer and tasks should not reset on refresh
+
+
+
+---
+
+7. Deployment Readiness
+
+Should be able to run on Replit with:
+
+run.py as entrypoint
+
+SQLite for DB
+
+All static files (JS, CSS) properly linked
+
+
+
+
+---
+
+8. Build Flow
+
+I want you to:
+
+1. Generate the backend structure and config files
+
+
+2. Then models, then auth routes, then home routes
+
+
+3. Then JavaScript for timer + localStorage
+
+
+4. Then templates with frontend logic and styling
+
+
+5. Then progress + leaderboard
+
+
+6. Finally, requirements.txt and run file*
+
+Final Note:
+
+Make sure:
+
+Only 1 timer can run at a time
+
+Pause/resume works smoothly
+
+Fullscreen mode can be toggled with buttons
+
+Timer persists on page refresh (localStorage)
+
+Continue building file-by-file, stopping after each one so I can review

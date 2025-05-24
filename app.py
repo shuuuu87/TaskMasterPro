@@ -22,7 +22,7 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-prod
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://task_master_db_ug9v_user:aBWeMlddjclzFy6D6wqGr5Hc6yQtmc95@dpg-d0oa0fndiees739rpmmg-a/task_master_db_ug9v"
+app.config["SQLALCHEMY_DATABASE_URI"] =("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,

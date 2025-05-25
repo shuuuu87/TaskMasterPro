@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Progress - Task Manager Reborn{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <!-- Progress Stats -->
+    <div class="col-12 mb-4">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ current_user.score }}</h3>
+                        <p>Total Points</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 style="color: {{ current_user.get_rank_color() }}">{{ current_user.get_rank() }}</h3>
+                        <p>Current Rank</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ total_tasks }}</h3>
+                        <p>Completed Tasks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ total_time }}</h3>
+                        <p>Total Minutes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 7-Day Progress Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>7-Day Progress
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="progressChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rank Progress -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-medal me-2"></i>Rank Progress
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="rank-progress">
+                    {% set ranks = [
+                        ('Bronze', 0, '#CD7F32'),
+                        ('Silver', 51, '#C0C0C0'),
+                        ('Gold', 101, '#FFD700'),
+                        ('Platinum', 151, '#E5E4E2'),
+                        ('Diamond', 201, '#B9F2FF'),
+                        ('Heroic', 251, '#FF6B6B'),
+                        ('Master', 301, '#9B59B6'),
+                        ('Elite Master', 351, '#8E44AD'),
+                        ('Grandmaster', 401, '#FF1744')
+                    ] %}
+                    
+                    {% for rank_name, threshold, color in ranks %}
+                    <div class="rank-item {% if current_user.score >= threshold %}achieved{% endif %}">
+                        <div class="rank-badge" style="background-color: {{ color }}">
+                            {% if current_user.score >= threshold %}
+                                <i class="fas fa-check"></i>
+                            {% else %}
+                                <i class="fas fa-lock"></i>
+                            {% endif %}
+                        </div>
+                        <div class="rank-info">
+                            <strong>{{ rank_name }}</strong>
+                            <small class="d-block text-muted">{{ threshold }}+ points</small>
+                        </div>
+                        {% if current_user.get_rank() == rank_name %}
+                        <div class="current-rank">
+                            <i class="fas fa-arrow-left text-primary"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Performance Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="performance-metric">
+                            <h4 class="text-primary">{{ (total_time / 60)|round(1) }}</h4>
+                            <p class="text-muted">Hours Worked</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="performance-metric">
+                            <h4 class="text-success">{{ (current_user.score / 5)|round(1) }}</h4>
+                            <p class="text-muted">Hours to Points Ratio</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="performance-metric">
+                            <h4 class="text-info">{{ (total_time / total_tasks)|round(1) if total_tasks > 0 else 0 }}</h4>
+                            <p class="text-muted">Avg. Task Duration</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Chart data from backend
+const chartLabels = {{ labels|tojson }};
+const chartData = {{ data|tojson }};
+
+// Initialize Chart.js
+const ctx = document.getElementById('progressChart').getContext('2d');
+const progressChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: chartLabels,
+        datasets: [{
+            label: 'Minutes Worked',
+            data: chartData,
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#007bff',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                },
+                ticks: {
+                    callback: function(value) {
+                        return value + ' min';
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            }
+        },
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        },
+        animation: {
+            duration: 2000,
+            easing: 'easeInOutQuart'
+        }
+    }
+});
+
+// Animate rank progress on load
+document.addEventListener('DOMContentLoaded', function() {
+    const rankItems = document.querySelectorAll('.rank-item.achieved');
+    rankItems.forEach((item, index) => {
+        setTimeout(() => {
+            item.style.animation = 'slideInLeft 0.5s ease forwards';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

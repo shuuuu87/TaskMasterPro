@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Task Manager Reborn{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <!-- User Position -->
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm bg-primary text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-1">
+                    <i class="fas fa-trophy me-2"></i>Your Position
+                </h4>
+                <h2 class="mb-0">#{{ user_rank }}</h2>
+                <p class="mb-0">
+                    <span class="badge bg-light text-dark me-2">{{ current_user.score }} points</span>
+                    <span class="badge" style="background-color: {{ current_user.get_rank_color() }}">{{ current_user.get_rank() }}</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top Players -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-crown me-2"></i>Global Leaderboard
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="10%">Rank</th>
+                                <th width="5%">Status</th>
+                                <th width="35%">Player</th>
+                                <th width="20%">Rank</th>
+                                <th width="15%">Points</th>
+                                <th width="15%">Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr {% if user.id == current_user.id %}class="table-primary"{% endif %}>
+                                <td>
+                                    <div class="rank-display">
+                                        {% if loop.index <= 3 %}
+                                            {% if loop.index == 1 %}
+                                                <i class="fas fa-crown text-warning fs-5"></i>
+                                            {% elif loop.index == 2 %}
+                                                <i class="fas fa-medal text-secondary fs-5"></i>
+                                            {% elif loop.index == 3 %}
+                                                <i class="fas fa-award text-info fs-5"></i>
+                                            {% endif %}
+                                        {% endif %}
+                                        <strong>#{{ loop.index }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if user.is_online() %}
+                                        <span class="status-indicator online" title="Online">
+                                            <i class="fas fa-circle text-success"></i>
+                                        </span>
+                                    {% else %}
+                                        <span class="status-indicator offline" title="Offline">
+                                            <i class="fas fa-circle text-secondary"></i>
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="player-info">
+                                        <strong>{{ user.username }}</strong>
+                                        {% if user.id == current_user.id %}
+                                            <span class="badge bg-primary ms-2">You</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge rank-badge" style="background-color: {{ user.get_rank_color() }}">
+                                        {{ user.get_rank() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-primary">{{ user.score }}</strong>
+                                    <small class="text-muted d-block">{{ (user.score / 5)|round(1) }}h</small>
+                                </td>
+                                <td class="text-muted">
+                                    {{ user.created_at.strftime('%b %d') }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users" style="font-size: 3rem; color: hsl(var(--text-secondary));"></i>
+                    <h5 class="mt-3" style="color: hsl(var(--text-secondary));">No players yet</h5>
+                    <p style="color: hsl(var(--text-secondary));">Be the first to complete some tasks!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rank Information -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Ranking System
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% set ranks = [
+                        ('Bronze', '0-50', '#CD7F32'),
+                        ('Silver', '51-100', '#C0C0C0'),
+                        ('Gold', '101-150', '#FFD700'),
+                        ('Platinum', '151-200', '#E5E4E2'),
+                        ('Diamond', '201-250', '#B9F2FF'),
+                        ('Heroic', '251-300', '#FF6B6B'),
+                        ('Master', '301-350', '#9B59B6'),
+                        ('Elite Master', '351-400', '#8E44AD'),
+                        ('Grandmaster', '401+', '#FF1744')
+                    ] %}
+                    
+                    {% for rank_name, range_text, color in ranks %}
+                    <div class="col-md-4 col-lg-3 mb-3">
+                        <div class="rank-info-card text-center">
+                            <div class="rank-badge-large mb-2" style="background-color: {{ color }}">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <h6 class="mb-1">{{ rank_name }}</h6>
+                            <small class="text-muted">{{ range_text }} points</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> You earn 5 points for every hour of work completed. Focus and dedication will help you climb the ranks!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-refresh online status every 30 seconds
+setInterval(function() {
+    // Add a subtle animation to online indicators
+    const onlineIndicators = document.querySelectorAll('.status-indicator.online i');
+    onlineIndicators.forEach(indicator => {
+        indicator.style.animation = 'pulse 1s ease-in-out';
+        setTimeout(() => {
+            indicator.style.animation = '';
+        }, 1000);
+    });
+}, 30000);
+
+// Animate leaderboard entries on load
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach((row, index) => {
+        setTimeout(() => {
+            row.style.animation = 'fadeInUp 0.5s ease forwards';
+            row.style.opacity = '1';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}
